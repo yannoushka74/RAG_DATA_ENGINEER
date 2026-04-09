@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rag-data-engineer"
-version = "0.1.0"
+version = "0.2.0"
 description = "RAG pipeline that ingests a Google Drive folder, embeds with Voyage AI and persists into ChromaDB"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -24,8 +24,12 @@ dependencies = [
     "python-dotenv>=1.0.1",
 ]
 
+[project.optional-dependencies]
+mcp = ["mcp>=1.2.0"]
+
 [project.scripts]
 rag-build = "rag_data_engineer.__main__:main"
+rag-mcp = "rag_data_engineer.mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/yannoushka74/RAG_DATA_ENGINEER"

@@ -18,10 +18,14 @@ def run_pipeline(settings: Settings | None = None) -> dict:
     builder = RagBuilder(
         voyage_api_key=settings.voyage_api_key,
         embedding_model=settings.embedding_model,
-        persist_dir=settings.chroma_persist_dir,
         collection_name=settings.chroma_collection,
         chunk_size=settings.chunk_size,
         chunk_overlap=settings.chunk_overlap,
+        persist_dir=settings.chroma_persist_dir,
+        http_host=settings.chroma_http_host,
+        http_port=settings.chroma_http_port,
+        http_ssl=settings.chroma_http_ssl,
+        auth_token=settings.chroma_auth_token,
     )
 
     known = builder.known_files()

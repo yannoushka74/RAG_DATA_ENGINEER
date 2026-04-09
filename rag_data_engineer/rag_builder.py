@@ -17,6 +17,34 @@ from .drive_loader import DriveFile
 logger = logging.getLogger(__name__)
 
 
+def make_chroma_client(
+    *,
+    persist_dir: str | None = None,
+    http_host: str | None = None,
+    http_port: int = 8000,
+    http_ssl: bool = False,
+    auth_token: str | None = None,
+):
+    """Return a Chroma client. HTTP mode wins when http_host is set."""
+    if http_host:
+        headers = {}
+        if auth_token:
+            headers["Authorization"] = f"Bearer {auth_token}"
+        return chromadb.HttpClient(
+            host=http_host,
+            port=http_port,
+            ssl=http_ssl,
+            headers=headers or None,
+            settings=ChromaSettings(anonymized_telemetry=False),
+        )
+    if not persist_dir:
+        raise ValueError("Either http_host or persist_dir must be provided")
+    return chromadb.PersistentClient(
+        path=persist_dir,
+        settings=ChromaSettings(anonymized_telemetry=False),
+    )
+
+
 @dataclass
 class Chunk:
     text: str
@@ -80,15 +108,24 @@ class RagBuilder:
         self,
         voyage_api_key: str,
         embedding_model: str,
-        persist_dir: str,
         collection_name: str,
         chunk_size: int,
         chunk_overlap: int,
+        *,
+        persist_dir: str | None = None,
+        http_host: str | None = None,
+        http_port: int = 8000,
+        http_ssl: bool = False,
+        auth_token: str | None = None,
     ):
         self.client = voyageai.Client(api_key=voyage_api_key)
         self.embedding_model = embedding_model
-        self.chroma = chromadb.PersistentClient(
-            path=persist_dir, settings=ChromaSettings(anonymized_telemetry=False)
+        self.chroma = make_chroma_client(
+            persist_dir=persist_dir,
+            http_host=http_host,
+            http_port=http_port,
+            http_ssl=http_ssl,
+            auth_token=auth_token,
         )
         self.collection = self.chroma.get_or_create_collection(
             name=collection_name, metadata={"hnsw:space": "cosine"}
