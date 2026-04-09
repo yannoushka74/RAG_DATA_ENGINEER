@@ -1,9 +1,9 @@
-"""CLI entry point: python -m rag_data_engineer or python scripts/build_rag.py"""
+"""Module entry point: `python -m rag_data_engineer` or `rag-build` CLI."""
 from __future__ import annotations
 
 import logging
 
-from rag_data_engineer import run_pipeline
+from .rag_pipeline import run_pipeline
 
 
 def main() -> None:

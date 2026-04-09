@@ -3,9 +3,9 @@ from __future__ import annotations
 
 import logging
 
-from config import Settings
-from src.drive_loader import DriveLoader
-from src.rag_builder import RagBuilder
+from .config import Settings
+from .drive_loader import DriveLoader
+from .rag_builder import RagBuilder
 
 logger = logging.getLogger(__name__)
 

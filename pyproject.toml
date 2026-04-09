@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-data-engineer"
+version = "0.1.0"
+description = "RAG pipeline that ingests a Google Drive folder, embeds with Voyage AI and persists into ChromaDB"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "yannoushka74" }]
+license = { text = "MIT" }
+keywords = ["rag", "embeddings", "voyage", "chromadb", "google-drive", "airflow"]
+dependencies = [
+    "google-api-python-client>=2.120.0",
+    "google-auth>=2.29.0",
+    "google-auth-httplib2>=0.2.0",
+    "chromadb>=0.5.0",
+    "voyageai>=0.3.0",
+    "pypdf>=4.2.0",
+    "python-docx>=1.1.0",
+    "python-pptx>=0.6.23",
+    "tiktoken>=0.7.0",
+    "python-dotenv>=1.0.1",
+]
+
+[project.scripts]
+rag-build = "rag_data_engineer.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/yannoushka74/RAG_DATA_ENGINEER"
+
+[tool.setuptools]
+packages = ["rag_data_engineer"]

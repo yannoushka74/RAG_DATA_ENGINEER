@@ -7,9 +7,10 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+# Best-effort: load .env from the current working directory if present.
+# When the package is installed via pip, there is no project-local .env, so
+# the caller (CLI script or Airflow DAG) is expected to populate the env.
 load_dotenv()
-
-PROJECT_ROOT = Path(__file__).resolve().parent
 
 
 @dataclass(frozen=True)
@@ -39,7 +40,7 @@ class Settings:
             google_service_account_file=required["GOOGLE_SERVICE_ACCOUNT_FILE"],
             gdrive_folder_id=required["GDRIVE_FOLDER_ID"],
             chroma_persist_dir=os.getenv(
-                "CHROMA_PERSIST_DIR", str(PROJECT_ROOT / "chroma_db")
+                "CHROMA_PERSIST_DIR", str(Path.cwd() / "chroma_db")
             ),
             chroma_collection=os.getenv("CHROMA_COLLECTION", "rag_data_engineer"),
             embedding_model=os.getenv("EMBEDDING_MODEL", "voyage-3"),

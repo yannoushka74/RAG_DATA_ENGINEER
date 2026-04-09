@@ -12,7 +12,7 @@ import voyageai
 from chromadb.config import Settings as ChromaSettings
 from pypdf import PdfReader
 
-from src.drive_loader import DriveFile
+from .drive_loader import DriveFile
 
 logger = logging.getLogger(__name__)
 
