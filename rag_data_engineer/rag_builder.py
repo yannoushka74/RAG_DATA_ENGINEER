@@ -13,6 +13,7 @@ from chromadb.config import Settings as ChromaSettings
 from pypdf import PdfReader
 
 from .drive_loader import DriveFile
+from .obsidian import preprocess_obsidian
 
 logger = logging.getLogger(__name__)
 
@@ -52,15 +53,24 @@ class Chunk:
     chunk_id: str
 
 
-def extract_text(file: DriveFile) -> str:
+def extract_text(file: DriveFile) -> tuple[str, dict]:
+    """Extract text from a DriveFile. Returns (text, extra_metadata).
+
+    For Obsidian markdown files, frontmatter tags/aliases are extracted
+    and wikilink syntax is cleaned up.
+    """
+    extra_meta: dict = {}
     mime = file.effective_mime
     if mime == "application/pdf":
         if not file.content:
-            return ""
+            return "", extra_meta
         reader = PdfReader(io.BytesIO(file.content))
-        return "\n".join((page.extract_text() or "") for page in reader.pages)
+        return "\n".join((page.extract_text() or "") for page in reader.pages), extra_meta
     if mime in {"text/plain", "text/markdown", "text/csv"}:
-        return file.content.decode("utf-8", errors="replace")
+        raw = file.content.decode("utf-8", errors="replace")
+        if file.name.endswith(".md"):
+            raw, extra_meta = preprocess_obsidian(raw)
+        return raw, extra_meta
     if (
         mime
         == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -68,7 +78,7 @@ def extract_text(file: DriveFile) -> str:
         from docx import Document  # lazy import
 
         doc = Document(io.BytesIO(file.content))
-        return "\n".join(p.text for p in doc.paragraphs)
+        return "\n".join(p.text for p in doc.paragraphs), extra_meta
     if (
         mime
         == "application/vnd.openxmlformats-officedocument.presentationml.presentation"
@@ -81,9 +91,9 @@ def extract_text(file: DriveFile) -> str:
             for shape in slide.shapes:
                 if hasattr(shape, "text") and shape.text:
                     parts.append(shape.text)
-        return "\n".join(parts)
+        return "\n".join(parts), extra_meta
     logger.warning("No extractor for mime %s (file %s)", mime, file.name)
-    return ""
+    return "", extra_meta
 
 
 def chunk_text(text: str, chunk_size: int, overlap: int, encoder) -> list[str]:
@@ -179,7 +189,7 @@ class RagBuilder:
         return out
 
     def upsert_file(self, file: DriveFile) -> int:
-        text = extract_text(file)
+        text, extra_meta = extract_text(file)
         chunks = chunk_text(
             text, self.chunk_size, self.chunk_overlap, self.encoder
         )
@@ -197,6 +207,7 @@ class RagBuilder:
                 "mime_type": file.mime_type,
                 "modified_time": file.modified_time,
                 "chunk_index": i,
+                **extra_meta,
             }
             for i in range(len(chunks))
         ]

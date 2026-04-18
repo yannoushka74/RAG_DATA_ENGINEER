@@ -22,6 +22,7 @@ dependencies = [
     "python-pptx>=0.6.23",
     "tiktoken>=0.7.0",
     "python-dotenv>=1.0.1",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
